@@ -48,6 +48,10 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com/v1
 | [docs/DEPLOYMENT_AND_OPERATIONS.md](docs/DEPLOYMENT_AND_OPERATIONS.md) | Live server, Nginx, MySQL, security checklist |
 | [docs/SYSTEM_ANALYSIS.md](docs/SYSTEM_ANALYSIS.md) | Actors, data flows, RBAC (system analyst view) |
 
+## Deploy (HTTPS URL for the mobile app)
+
+**Netlify does not run Laravel.** **Vercel is a poor fit** for this stack (see [docs/DEPLOYMENT_AND_OPERATIONS.md](docs/DEPLOYMENT_AND_OPERATIONS.md)). **Free-tier friendly:** `render.yaml` on **Render**, or **`fly.toml`** + `Dockerfile` on **Fly.io**, plus **Railway** (usage credits). After deploy, set `API_BASE_URL=https://your-host/v1` in the app.
+
 ## Production checklist
 
 - `APP_DEBUG=false`, strong `APP_KEY`, MySQL/PostgreSQL, Redis for cache/queue

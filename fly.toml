@@ -1,0 +1,48 @@
+# Fly.io — free resource allowance (shared VMs, Postgres paid separately or use external free DB).
+# First deploy: install https://fly.io/docs/hands-on/install-flyctl/
+#   fly launch --no-deploy   # pick region, app name; merge if prompted
+#   fly postgres create --name whitelane-db --region <same-as-app>
+#   fly postgres attach --app <your-app> whitelane-db
+#   fly secrets set APP_KEY="$(php artisan key:generate --show)"
+#   fly secrets set APP_URL="https://<your-app>.fly.dev"
+#   fly secrets set APP_ENV=production APP_DEBUG=false LOG_CHANNEL=stderr DB_CONNECTION=pgsql
+#   fly deploy
+#
+# After `fly postgres attach`, DATABASE_URL is set; Laravel reads it via config/database.php.
+
+app = "whitelane-api"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  APP_ENV = "production"
+  APP_DEBUG = "false"
+  LOG_CHANNEL = "stderr"
+  DB_CONNECTION = "pgsql"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 80
+
+[[http_service.checks]]
+  grace_period = "15s"
+  interval = "30s"
+  method = "GET"
+  timeout = "10s"
+  path = "/up"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

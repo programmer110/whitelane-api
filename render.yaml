@@ -1,0 +1,33 @@
+# Blueprint: https://render.com/docs/blueprint-spec
+# Deploy: connect this repo to Render and use "Apply render.yaml", or
+# create a Web Service and PostgreSQL instance manually with the same env vars.
+
+databases:
+  - name: whitelane-db
+    databaseName: whitelane
+    user: whitelane
+
+services:
+  - type: web
+    name: whitelane-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /up
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: info
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: whitelane-db
+          property: connectionString
+      # Set in the Render dashboard (generate locally: php artisan key:generate --show):
+      # - APP_KEY
+      # - APP_URL (https://<your-service>.onrender.com)

@@ -1,5 +1,49 @@
 # Deployment & operations (live server)
 
+## Vercel and Netlify
+
+This project is a **Laravel (PHP) API** with a **SQL database**, sessions, and migrations.
+
+| Platform | Fit |
+|----------|-----|
+| **Netlify** | Not suitable for this API. Netlify Functions are not a PHP/Laravel runtime; you would only host a static site here, not the backend. |
+| **Vercel** | Possible only via non‑official, serverless PHP workarounds (vendor size limits, cold starts, session/storage constraints). Not recommended for a production Laravel API with a real database. |
+
+For **Git push → HTTPS URL** with minimal ops, use **`render.yaml` + Docker** in this repo (PostgreSQL), or any PHP‑capable host (Nginx + PHP‑FPM, Laravel Forge, Fly.io, Railway, etc.) as described below.
+
+## Managed PaaS (Render + Docker)
+
+1. Push this repo to GitHub/GitLab.
+2. In [Render](https://render.com), **New → Blueprint**, select the repo, apply `render.yaml`.
+3. In the web service **Environment**, add secrets (not in git):
+   - `APP_KEY` — run locally: `php artisan key:generate --show`
+   - `APP_URL` — your service URL, e.g. `https://whitelane-api.onrender.com`
+4. After deploy, open `GET /up` and then `POST /v1/auth/driver/login` (see `docs/API_REFERENCE.md`). Point the mobile app at `https://<host>/v1`.
+
+Optional: set `SEED_ON_DEPLOY=true` **once** on a throwaway instance if you want demo data from `DatabaseSeeder`; remove it afterward for production.
+
+## Free / low-cost hosting (Docker-friendly, open tooling)
+
+These are common choices for **open-source stacks** (Laravel + Postgres/MySQL). None of them require a paid license; limits are the provider’s **free tier** or **usage credits**.
+
+| Option | Cost model | Notes |
+|--------|------------|--------|
+| **[Render](https://render.com)** | Free web service + free Postgres (limits; DB trial may expire) | Easiest path here: `render.yaml` + Git. Service **spins down** when idle (~30–60s cold start). |
+| **[Fly.io](https://fly.io)** | Free allowance (shared CPU, bandwidth caps) | This repo includes **`fly.toml`** + `Dockerfile`. Postgres is **separate** (often small paid add-on); use `fly postgres create` + `attach`, or an external free DB. `DATABASE_URL` is read by Laravel (see `config/database.php`). |
+| **[Railway](https://railway.app)** | ~$5/month **credit** (often enough for small APIs) | Connect repo, add Postgres, set same env vars as Render. |
+| **[Koyeb](https://www.koyeb.com)** | Free tier for small apps | Docker deploy; add managed DB or external Postgres. |
+| **Oracle Cloud “Always Free” ARM VM** | Free VM (you manage OS) | Install Docker or Nginx + PHP-FPM yourself; full control, more ops. |
+
+**Self-hosted (open source control plane):** [Coolify](https://coolify.io) and [CapRover](https://caprover.com) are **free software** you run on **your own** VPS; the VPS is usually paid (except Oracle free tier, etc.).
+
+## Fly.io (this repository)
+
+1. Install [flyctl](https://fly.io/docs/hands-on/install-flyctl/), then from the project root: `fly auth login`.
+2. If the name `whitelane-api` is taken, run `fly launch` and choose a **unique** app name (update `app` in `fly.toml` to match).
+3. Create and attach Postgres: `fly postgres create`, then `fly postgres attach --app <your-app> <postgres-app-name>` (sets `DATABASE_URL`).
+4. Set secrets: `APP_KEY` (`php artisan key:generate --show`), `APP_URL` (`https://<app>.fly.dev`), and ensure `DB_CONNECTION=pgsql` (already in `fly.toml` `[env]`).
+5. `fly deploy` — then verify `GET https://<app>.fly.dev/up` and `/v1` routes.
+
 ## Stack assumptions
 
 - PHP **8.2+** with extensions: `mbstring`, `openssl`, `pdo`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`
