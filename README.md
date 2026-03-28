@@ -50,7 +50,11 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com/v1
 
 ## Deploy (HTTPS URL for the mobile app)
 
-**Netlify does not run Laravel.** **Vercel is a poor fit** for this stack (see [docs/DEPLOYMENT_AND_OPERATIONS.md](docs/DEPLOYMENT_AND_OPERATIONS.md)). **Deploy:** **Render** + `render.yaml` (Postgres in blueprint), **Vercel** + `vercel.json` (needs external Postgres, e.g. Neon), or **Fly.io** / **Railway**. **Netlify does not run this PHP API.** See [docs/DEPLOYMENT_AND_OPERATIONS.md](docs/DEPLOYMENT_AND_OPERATIONS.md). After deploy, set `API_BASE_URL=https://your-host/v1` in the app.
+**Vercel-native stack (recommended for Vercel):** [whitelane-next/](whitelane-next/) — **Next.js + Prisma + PostgreSQL**, same `/v1` routes and Sanctum-compatible tokens. Set the Vercel project root to `whitelane-next` and add `DATABASE_URL`.
+
+**Laravel (PHP):** **Render** + `render.yaml`, **Fly.io**, **Railway**, or experimental **Vercel PHP** (`vercel.json` in repo root). **Netlify does not run PHP/Laravel APIs.**
+
+See [docs/DEPLOYMENT_AND_OPERATIONS.md](docs/DEPLOYMENT_AND_OPERATIONS.md) and [whitelane-next/README.md](whitelane-next/README.md). After deploy, set `API_BASE_URL=https://your-host/v1` in the app.
 
 ## Production checklist
 

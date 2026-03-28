@@ -1,0 +1,84 @@
+// Mirrors Laravel migrations in ../database/migrations (same Postgres/MySQL schema).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  BigInt    @id @default(autoincrement())
+  name                String
+  email               String    @unique
+  emailVerifiedAt     DateTime? @map("email_verified_at")
+  password            String
+  rememberToken       String?   @map("remember_token")
+  phone               String?   @unique
+  username            String?   @unique
+  role                String    @default("driver")
+  mustResetPassword   Boolean   @default(false) @map("must_reset_password")
+  isOnline            Boolean   @default(false) @map("is_online")
+  lastLat             Decimal?  @map("last_lat") @db.Decimal(10, 7)
+  lastLng             Decimal?  @map("last_lng") @db.Decimal(10, 7)
+  accountStatus       String    @default("active") @map("account_status")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  refreshTokens RefreshToken[]
+  trips         Trip[]         @relation("DriverTrips")
+
+  @@map("users")
+}
+
+model PersonalAccessToken {
+  id            BigInt   @id @default(autoincrement())
+  tokenableType String   @map("tokenable_type")
+  tokenableId   BigInt   @map("tokenable_id")
+  name          String
+  token         String   @unique @db.VarChar(64)
+  abilities     Json?
+  lastUsedAt    DateTime? @map("last_used_at")
+  expiresAt     DateTime? @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([tokenableType, tokenableId])
+  @@map("personal_access_tokens")
+}
+
+model RefreshToken {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique @map("token_hash") @db.VarChar(64)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("refresh_tokens")
+}
+
+model Trip {
+  id                  BigInt   @id @default(autoincrement())
+  pickupAddress       String   @map("pickup_address")
+  dropoffAddress      String   @map("dropoff_address")
+  scheduledAt         DateTime @map("scheduled_at") @db.Timestamptz(6)
+  customerDisplayName String   @map("customer_display_name")
+  vehicleTypeLabel    String   @default("Standard") @map("vehicle_type_label")
+  segment             String   @default("b2c") @db.VarChar(8)
+  driverStatus        String   @default("offered") @map("driver_status") @db.VarChar(40)
+  paymentPaid         Boolean  @default(false) @map("payment_paid")
+  driverId            BigInt?  @map("driver_id")
+  driver              User?    @relation("DriverTrips", fields: [driverId], references: [id], onDelete: SetNull)
+  pickupLat           Decimal? @map("pickup_lat") @db.Decimal(10, 7)
+  pickupLng           Decimal? @map("pickup_lng") @db.Decimal(10, 7)
+  dropoffLat          Decimal? @map("dropoff_lat") @db.Decimal(10, 7)
+  dropoffLng          Decimal? @map("dropoff_lng") @db.Decimal(10, 7)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@map("trips")
+}
