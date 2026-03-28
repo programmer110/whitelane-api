@@ -11,6 +11,10 @@ This project is a **Laravel (PHP) API** with a **SQL database**, sessions, and m
 
 For **Git push → HTTPS URL** with minimal ops, use **`render.yaml` + Docker** in this repo (PostgreSQL), or any PHP‑capable host (Nginx + PHP‑FPM, Laravel Forge, Fly.io, Railway, etc.) as described below.
 
+### Recommendation for this project
+
+**Use [Render](https://render.com) with `render.yaml`.** It is the best default here: the blueprint already provisions **web + PostgreSQL**, links **`DB_URL`**, and deploys from Git with **no Fly CLI or extra DB provisioning**. The main downside of the free web tier is **sleep after idle time** (the first request after sleep can take on the order of **30–60 seconds**). Prefer **Fly.io** if you already run workloads there or want a different global/edge story (Postgres is often a separate paid add-on). Prefer **Railway** if you like usage credits and a very fast connect-repo flow.
+
 ## Managed PaaS (Render + Docker)
 
 1. Push this repo to GitHub/GitLab.
