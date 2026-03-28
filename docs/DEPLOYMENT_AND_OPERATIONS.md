@@ -6,14 +6,32 @@ This project is a **Laravel (PHP) API** with a **SQL database**, sessions, and m
 
 | Platform | Fit |
 |----------|-----|
-| **Netlify** | Not suitable for this API. Netlify Functions are not a PHP/Laravel runtime; you would only host a static site here, not the backend. |
-| **Vercel** | Possible only via non‑official, serverless PHP workarounds (vendor size limits, cold starts, session/storage constraints). Not recommended for a production Laravel API with a real database. |
+| **Netlify** | **Cannot** run this Laravel API. Netlify Functions are Node/Go (not PHP). You could host a **static** `public/` build only; `index.php` would not execute. **Do not** expect `/v1` JSON APIs to work on Netlify. |
+| **Vercel** | **Supported** via `serverless` PHP (`vercel-php`, see `api/index.php` + `vercel.json`). You **must** use a **remote** Postgres/MySQL (e.g. [Neon](https://neon.tech) free tier); SQLite is incompatible with the read‑only filesystem. Respect the **~250MB** deployment size limit (this app’s `vendor` is small enough). |
+
+### Vercel (step‑by‑step)
+
+1. **Database:** Create a Postgres instance (Neon recommended). Copy the connection string.
+2. **Vercel project:** Import this Git repo. Set **Node.js 18** (see `package.json` `engines` and `.nvmrc`) — required for `vercel-php` builds.
+3. **Environment variables** (Project → Settings → Environment Variables), for **Production**:
+   - `APP_KEY` — `php artisan key:generate --show` locally
+   - `APP_URL` — `https://<your-project>.vercel.app`
+   - `APP_ENV=production`, `APP_DEBUG=false`
+   - `DB_CONNECTION=pgsql`, `DB_URL` or `DATABASE_URL` — Neon connection string  
+   `vercel.json` already sets `/tmp` cache paths and `CACHE_STORE=array` / `SESSION_DRIVER=array` for serverless.
+4. **Migrations:** From your machine (not on Vercel’s filesystem):  
+   `DB_URL="postgresql://..." php artisan migrate --force`  
+   Optional seed: `php artisan db:seed --force` only on non‑production.
+5. **Deploy:** Push to the connected branch or run `vercel --prod` after `vercel login`.
+6. Verify `GET https://<project>.vercel.app/up` and `POST /v1/auth/driver/login` with `Authorization: Bearer` where required.
 
 For **Git push → HTTPS URL** with minimal ops, use **`render.yaml` + Docker** in this repo (PostgreSQL), or any PHP‑capable host (Nginx + PHP‑FPM, Laravel Forge, Fly.io, Railway, etc.) as described below.
 
 ### Recommendation for this project
 
-**Use [Render](https://render.com) with `render.yaml`.** It is the best default here: the blueprint already provisions **web + PostgreSQL**, links **`DB_URL`**, and deploys from Git with **no Fly CLI or extra DB provisioning**. The main downside of the free web tier is **sleep after idle time** (the first request after sleep can take on the order of **30–60 seconds**). Prefer **Fly.io** if you already run workloads there or want a different global/edge story (Postgres is often a separate paid add-on). Prefer **Railway** if you like usage credits and a very fast connect-repo flow.
+- **Easiest full stack (app + managed Postgres):** [Render](https://render.com) + `render.yaml` — one blueprint, **`DB_URL`** wired, migrations via container boot. Free web tier **sleeps** when idle (cold starts).
+- **If you require Vercel:** use **`vercel.json`** + **`api/index.php`** (see above). You must bring **external Postgres** (e.g. Neon) and run **migrations from your laptop** once. Use **Node 18** on the project.
+- **Fly.io / Railway:** see sections below.
 
 ## Managed PaaS (Render + Docker)
 
