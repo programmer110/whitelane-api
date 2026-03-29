@@ -26,7 +26,10 @@ export async function PATCH(
   }
 
   const { tripId } = await context.params;
-  const id = BigInt(tripId);
+  const id = parseInt(tripId, 10);
+  if (Number.isNaN(id)) {
+    return jsonError('forbidden', 'Action not allowed for trip state', 403);
+  }
   const model = await findAuthorizedTrip(id, userOrRes.id);
 
   if (!model) {

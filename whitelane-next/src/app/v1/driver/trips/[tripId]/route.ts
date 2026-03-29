@@ -13,7 +13,10 @@ export async function GET(
   if (userOrRes instanceof Response) return userOrRes;
 
   const { tripId } = await context.params;
-  const id = BigInt(tripId);
+  const id = parseInt(tripId, 10);
+  if (Number.isNaN(id)) {
+    return jsonError('forbidden', 'Trip not available', 403);
+  }
   const model = await findAuthorizedTrip(id, userOrRes.id);
   if (!model) {
     return jsonError('forbidden', 'Trip not available', 403);

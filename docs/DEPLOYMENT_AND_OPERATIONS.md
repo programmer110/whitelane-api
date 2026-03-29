@@ -29,7 +29,7 @@ For **Git push → HTTPS URL** with minimal ops, use **`render.yaml` + Docker** 
 
 ### Recommendation for this project
 
-- **Best fit for Vercel:** the **`whitelane-next/`** app (Next.js + Prisma + Postgres). First-class Node serverless, no PHP runtime. Same **`/v1`** URLs as this Laravel app; tokens are Sanctum-compatible if you share the database.
+- **Best fit for Vercel:** the **`whitelane-next/`** app (Next.js + Prisma). Use **SQLite** locally (`database/database.sqlite`, shared with Laravel) or **PostgreSQL** in production (Neon, etc.). First-class Node serverless, no PHP runtime. Same **`/v1`** URLs; tokens are Sanctum-compatible if you share the database. Do not run `prisma db push` against a Laravel-managed SQLite file — use **`prisma generate`** after Laravel migrations.
 - **Easiest full stack (app + managed Postgres) without Vercel:** [Render](https://render.com) + `render.yaml` — one blueprint, **`DB_URL`** wired, migrations via container boot. Free web tier **sleeps** when idle (cold starts).
 - **Laravel on Vercel (PHP):** **`vercel.json`** + **`api/index.php`** (see above). You must bring **external Postgres** (e.g. Neon) and run **migrations** yourself. Prefer **Node 18** for `vercel-php` builds.
 - **Fly.io / Railway:** see sections below.

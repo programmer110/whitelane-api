@@ -50,7 +50,7 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com/v1
 
 ## Deploy (HTTPS URL for the mobile app)
 
-**Vercel-native stack (recommended for Vercel):** [whitelane-next/](whitelane-next/) — **Next.js + Prisma + PostgreSQL**, same `/v1` routes and Sanctum-compatible tokens. Set the Vercel project root to `whitelane-next` and add `DATABASE_URL`.
+**Vercel-native stack (recommended for Vercel):** [whitelane-next/](whitelane-next/) — **Next.js + Prisma**; **SQLite** locally (same `database/database.sqlite` as Laravel) or **PostgreSQL** in production. Set the Vercel project root to `whitelane-next` and add `DATABASE_URL`.
 
 **Laravel (PHP):** **Render** + `render.yaml`, **Fly.io**, **Railway**, or experimental **Vercel PHP** (`vercel.json` in repo root). **Netlify does not run PHP/Laravel APIs.**
 

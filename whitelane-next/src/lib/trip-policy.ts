@@ -4,6 +4,6 @@ export function isConfirmedOperational(t: Trip): boolean {
   return t.paymentPaid && t.driverStatus !== 'cancelled';
 }
 
-export function isVisibleToDriver(t: Trip, driverId: bigint): boolean {
+export function isVisibleToDriver(t: Trip, driverId: number): boolean {
   return t.driverId === driverId;
 }

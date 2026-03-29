@@ -14,7 +14,10 @@ export async function POST(
   if (userOrRes instanceof Response) return userOrRes;
 
   const { tripId } = await context.params;
-  const id = BigInt(tripId);
+  const id = parseInt(tripId, 10);
+  if (Number.isNaN(id)) {
+    return jsonError('conflict', 'Trip no longer available', 409);
+  }
   const model = await findAuthorizedTrip(id, userOrRes.id);
 
   if (!model || model.driverStatus !== 'offered') {
