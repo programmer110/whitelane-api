@@ -1,40 +1,41 @@
 # Whitelane Driver API
 
-Standalone **Laravel 13** JSON API for the **Whitelane Driver** mobile app (`../whitelane_driver`).  
-**No public self-registration** — drivers are created in the database or via your admin tooling.
+Production driver JSON API: **[whitelane-next/](whitelane-next/)** (**Next.js** + **Supabase**). Same routes as documented in [docs/API_REFERENCE.md](docs/API_REFERENCE.md): **`/v1/*`**, **`GET /up`**, Sanctum-style tokens.
 
-## Features
+**No public self-registration** — create drivers in Supabase (seed SQL / dashboard) or your own tooling.
 
-- **Sanctum** bearer tokens (short-lived access + **refresh tokens** in `refresh_tokens` table)
-- **RBAC**: `driver` middleware on all `/v1/driver/*` routes; login blocked for non-drivers
-- **Driver-safe trip payloads** — no fare, payment line items, or invoices in JSON
-- **Business rules**: trips require `payment_paid` for driver visibility and completion
-- **Routes** under **`/v1`** (matches Flutter `API_BASE_URL` ending in `/v1`)
-
-## Quick start (local)
+## Quick start (Next.js + Supabase)
 
 ```bash
-cd whitelane-api
-composer install
+cd whitelane-next
 cp .env.example .env
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan serve
+# Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+
+# Supabase → SQL Editor: run whitelane-next/supabase/schema.sql once
+
+npm install
+npm run db:seed
+npm run dev
 ```
 
-**Demo driver (after seed):**
+Open `http://localhost:3000/up` and use `http://localhost:3000/v1` as the API base.
 
-- Identifier: `driver1` or `driver@whitelane.local` or `+10000000001`
-- Password: `password`
-- OTP mode: set `WHITELANE_OTP_FALLBACK_TO_PASSWORD=true` (default) to accept the same password as OTP until SMS is integrated; or set a one-time code with `Cache::put('driver_login_otp:{userId}', '123456', now()->addMinutes(5))`.
+**Demo driver (after seed):** `driver1` / `password` (same identifiers as the old Laravel seed).
 
-## Flutter app URL
+Details: [whitelane-next/README.md](whitelane-next/README.md) (env vars, RLS, **curl** smoke tests).
 
-Point the app at:
+## Deploy (Vercel)
 
-`https://your-domain.com/v1`
+1. Connect this Git repo to Vercel.
+2. Set **Root Directory** to **`whitelane-next`** (required — the repo root is not a Next app).
+3. Add env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
+4. Run **`whitelane-next/supabase/schema.sql`** in Supabase before traffic.
 
-Example:
+**Preview deployments:** Vercel Deployment Protection may block anonymous `curl`; use production, a bypass token, or see [whitelane-next/README.md](whitelane-next/README.md).
+
+## Flutter app
+
+`API_BASE_URL` must end with `/v1`, e.g. `https://your-host/v1`.
 
 ```bash
 flutter run --dart-define=API_BASE_URL=https://api.example.com/v1
@@ -44,25 +45,20 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com/v1
 
 | Document | Purpose |
 |----------|---------|
+| [whitelane-next/README.md](whitelane-next/README.md) | Next.js env, Supabase setup, curl tests |
 | [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | Endpoints and payloads |
-| [docs/DEPLOYMENT_AND_OPERATIONS.md](docs/DEPLOYMENT_AND_OPERATIONS.md) | Live server, Nginx, MySQL, security checklist |
-| [docs/SYSTEM_ANALYSIS.md](docs/SYSTEM_ANALYSIS.md) | Actors, data flows, RBAC (system analyst view) |
+| [docs/DEPLOYMENT_AND_OPERATIONS.md](docs/DEPLOYMENT_AND_OPERATIONS.md) | Servers, ops (includes optional **Laravel** Docker / Render / Fly) |
+| [docs/SYSTEM_ANALYSIS.md](docs/SYSTEM_ANALYSIS.md) | Actors, RBAC |
 
-## Deploy (HTTPS URL for the mobile app)
+## Optional: Laravel codebase in this repo
 
-**Vercel-native stack (recommended for Vercel):** [whitelane-next/](whitelane-next/) — **Next.js + Supabase JS** (no direct Postgres URL in the app). Set the Vercel project root to `whitelane-next` and add **`NEXT_PUBLIC_SUPABASE_URL`** + **`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`**. Apply **`whitelane-next/supabase/schema.sql`** in the Supabase SQL editor first.
+The **`app/`**, **`routes/`**, **`database/`**, etc. tree is a **legacy Laravel 13** implementation of the same API. It is **not** used for the recommended Vercel deployment above. To run it locally: `composer install`, `cp .env.example .env`, `php artisan key:generate`, migrate/seed, `php artisan serve`.
 
-**Laravel (PHP):** **Render** + `render.yaml`, **Fly.io**, **Railway**, or experimental **Vercel PHP** (`vercel.json` in repo root). **Netlify does not run PHP/Laravel APIs.**
+## Production checklist (Next + Supabase)
 
-See [docs/DEPLOYMENT_AND_OPERATIONS.md](docs/DEPLOYMENT_AND_OPERATIONS.md) and [whitelane-next/README.md](whitelane-next/README.md). After deploy, set `API_BASE_URL=https://your-host/v1` in the app.
-
-## Production checklist
-
-- `APP_DEBUG=false`, strong `APP_KEY`, MySQL/PostgreSQL, Redis for cache/queue
-- TLS termination (Nginx / load balancer)
-- Set `WHITELANE_OTP_FALLBACK_TO_PASSWORD=false` and implement real OTP (SMS)
-- Tune `config/sanctum.php` and token TTLs in `AuthTokenService`
-- Scheduler + queues if you add dispatch/notifications
+- Supabase: schema applied, RLS off (or policies) for Whitelane tables as in `supabase/schema.sql`
+- Vercel: correct **Root Directory** (`whitelane-next`) and both `NEXT_PUBLIC_*` variables
+- Set `WHITELANE_OTP_FALLBACK_TO_PASSWORD=false` when real OTP is implemented
 
 ## License
 

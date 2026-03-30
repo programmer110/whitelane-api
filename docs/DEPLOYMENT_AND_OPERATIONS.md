@@ -2,36 +2,27 @@
 
 ## Vercel and Netlify
 
-This project is a **Laravel (PHP) API** with a **SQL database**, sessions, and migrations.
+The **recommended** production API is **`whitelane-next/`** (Next.js + **Supabase** over PostgREST). Same **`/v1`** routes and payloads as [API_REFERENCE.md](API_REFERENCE.md).
 
 | Platform | Fit |
 |----------|-----|
-| **Netlify** | **Cannot** run this Laravel API. Netlify Functions are Node/Go (not PHP). You could host a **static** `public/` build only; `index.php` would not execute. **Do not** expect `/v1` JSON APIs to work on Netlify. |
-| **Vercel** | **Supported** via `serverless` PHP (`vercel-php`, see `api/index.php` + `vercel.json`). You **must** use a **remote** Postgres/MySQL (e.g. [Neon](https://neon.tech) free tier); SQLite is incompatible with the read‑only filesystem. Respect the **~250MB** deployment size limit (this app’s `vendor` is small enough). |
+| **Vercel** | **Supported** for **`whitelane-next`**. Set the Vercel project **Root Directory** to `whitelane-next`. Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`. Apply `whitelane-next/supabase/schema.sql` in Supabase first. See [whitelane-next/README.md](../whitelane-next/README.md). |
+| **Netlify** | **Cannot** run the **Laravel** PHP API. For the **Next.js** app, use Netlify’s Next runtime **only if** you configure the site with root = `whitelane-next` and the same env vars; this repo does not ship a Netlify config by default. |
 
-### Vercel (step‑by‑step)
+### Vercel (Next.js + Supabase, step‑by‑step)
 
-1. **Database:** Create a Postgres instance (Neon recommended). Copy the connection string.
-2. **Vercel project:** Import this Git repo. Set **Node.js 24** (see `package.json` `engines` and `.nvmrc`) — required for `vercel-php` builds.
-3. **Environment variables** (Project → Settings → Environment Variables), for **Production**:
-   - `APP_KEY` — `php artisan key:generate --show` locally
-   - `APP_URL` — `https://<your-project>.vercel.app`
-   - `APP_ENV=production`, `APP_DEBUG=false`
-   - `DB_CONNECTION=pgsql`, `DB_URL` or `DATABASE_URL` — Neon connection string  
-   `vercel.json` already sets `/tmp` cache paths and `CACHE_STORE=array` / `SESSION_DRIVER=array` for serverless.
-4. **Migrations:** From your machine (not on Vercel’s filesystem):  
-   `DB_URL="postgresql://..." php artisan migrate --force`  
-   Optional seed: `php artisan db:seed --force` only on non‑production.
-5. **Deploy:** Push to the connected branch or run `vercel --prod` after `vercel login`.
-6. Verify `GET https://<project>.vercel.app/up` and `POST /v1/auth/driver/login` with `Authorization: Bearer` where required.
+1. **Supabase:** Create a project. In **SQL Editor**, run `whitelane-next/supabase/schema.sql` (tables + grants + RLS off for Whitelane tables).
+2. **Vercel:** Import this repo. Set **Root Directory** to **`whitelane-next`** (do **not** leave the repo root — it is not a Next.js app).
+3. **Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`, optionally `WHITELANE_OTP_FALLBACK_TO_PASSWORD`.
+4. **Node:** Use **24.x** to match `whitelane-next/package.json` `engines`.
+5. **Deploy** and verify `GET /up`, then `POST /v1/auth/driver/login` (see [whitelane-next/README.md](../whitelane-next/README.md) for curl examples).
 
-For **Git push → HTTPS URL** with minimal ops, use **`render.yaml` + Docker** in this repo (PostgreSQL), or any PHP‑capable host (Nginx + PHP‑FPM, Laravel Forge, Fly.io, Railway, etc.) as described below.
+For **Laravel (PHP) + Docker** (Render, Fly.io, etc.), see sections below — that path does **not** use Vercel’s removed root `vercel.json` / `api/index.php` setup.
 
 ### Recommendation for this project
 
-- **Best fit for Vercel:** the **`whitelane-next/`** app (Next.js + Prisma). Use **SQLite** locally (`database/database.sqlite`, shared with Laravel) or **PostgreSQL** in production (Neon, etc.). First-class Node serverless, no PHP runtime. Same **`/v1`** URLs; tokens are Sanctum-compatible if you share the database. Do not run `prisma db push` against a Laravel-managed SQLite file — use **`prisma generate`** after Laravel migrations.
-- **Easiest full stack (app + managed Postgres) without Vercel:** [Render](https://render.com) + `render.yaml` — one blueprint, **`DB_URL`** wired, migrations via container boot. Free web tier **sleeps** when idle (cold starts).
-- **Laravel on Vercel (PHP):** **`vercel.json`** + **`api/index.php`** (see above). You must bring **external Postgres** (e.g. Neon) and run **migrations** yourself. Prefer **Node 18** for `vercel-php` builds.
+- **Vercel:** **`whitelane-next`** + Supabase only (documented above).
+- **Easiest full Laravel stack (PHP + Postgres) without Vercel:** [Render](https://render.com) + `render.yaml` — one blueprint, **`DB_URL`** wired, migrations via container boot. Free web tier **sleeps** when idle (cold starts).
 - **Fly.io / Railway:** see sections below.
 
 ## Managed PaaS (Render + Docker)

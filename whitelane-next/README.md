@@ -54,6 +54,28 @@ If you already applied an older `schema.sql`, run the **DISABLE ROW LEVEL SECURI
 
 `GET /up` returns `supabase_js: true` when both public env vars are set.
 
+## Smoke test with curl
+
+Replace `BASE` with your deployment origin (no trailing slash). For **password-protected** Vercel previews, add `?x-vercel-protection-bypass=YOUR_TOKEN&x-vercel-set-bypass-cookie=true` or use production.
+
+```bash
+BASE=http://localhost:3000   # or https://your-app.vercel.app
+
+curl -sS "$BASE/up"
+echo
+
+curl -sS -X POST "$BASE/v1/auth/driver/login" \
+  -H "Content-Type: application/json" \
+  -d '{"identifier":"driver1","secret":"password","mode":"password"}'
+echo
+```
+
+Automated script (same defaults as above):
+
+```bash
+./scripts/curl-smoke.sh http://localhost:3000
+```
+
 ## Behaviour notes
 
 - **Sanctum-compatible** tokens (`id|secret`) and refresh rows in `personal_access_tokens` / `refresh_tokens`.
