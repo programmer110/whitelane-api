@@ -32,6 +32,14 @@ JSON lists are **top-level arrays** (no `data` wrapper). Errors: `{ "error": { "
 
 **403** — not a driver / inactive. **404** — unknown user or bad secret.
 
+**Troubleshooting (Next.js + Supabase):**
+
+- **URL:** `POST /v1/auth/driver/login` on the **same host** as the app (no `/api` prefix). Example: `https://your-deployment.vercel.app/v1/auth/driver/login`.
+- **Headers:** `Content-Type: application/json` (required for JSON body).
+- **Body:** Must be valid JSON (not form fields). Your example is correct.
+- **503 + `configuration`:** Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` on the server (e.g. Vercel env).
+- **404:** User missing in Supabase — run `npm run db:seed` locally (with `.env`) or insert the demo driver; try identifier `driver@whitelane.local` as well as `driver1`.
+
 ### `POST /v1/auth/refresh`
 
 ```json

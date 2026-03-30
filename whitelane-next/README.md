@@ -70,10 +70,11 @@ curl -sS -X POST "$BASE/v1/auth/driver/login" \
 echo
 ```
 
-Automated script (same defaults as above):
+Automated scripts (with **`npm run dev`** or **`npm run start`** running):
 
 ```bash
 ./scripts/curl-smoke.sh http://localhost:3000
+./scripts/curl-api-test.sh http://localhost:3000   # /up, login, upcoming, history, presence, refresh, logout, bad login
 ```
 
 ## Behaviour notes
