@@ -27,9 +27,11 @@ Details: [whitelane-next/README.md](whitelane-next/README.md) (env vars, RLS, **
 ## Deploy (Vercel)
 
 1. Connect this Git repo to Vercel.
-2. Set **Root Directory** to **`whitelane-next`** (required — the repo root is not a Next app).
-3. Add env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
-4. Run **`whitelane-next/supabase/schema.sql`** in Supabase before traffic.
+2. **Root Directory:** leave **empty** (repo root) — **`vercel.json`** at the root runs install/build inside **`whitelane-next/`** and sets **`outputDirectory`** to **`whitelane-next/.next`**.  
+   *Alternatively*, you can set Root Directory to **`whitelane-next`** and clear any custom **Output Directory** / **Build Command** overrides in Vercel so they don’t expect `dist` from the old Vite root.
+3. In Vercel → Project → Settings → **General**: if **Output Directory** is set to `dist`, **remove it** (let `vercel.json` or the Next builder control output).
+4. Add env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
+5. Run **`whitelane-next/supabase/schema.sql`** in Supabase before traffic.
 
 **Preview deployments:** Vercel Deployment Protection may block anonymous `curl`; use production, a bypass token, or see [whitelane-next/README.md](whitelane-next/README.md).
 

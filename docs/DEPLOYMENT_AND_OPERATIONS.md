@@ -12,7 +12,7 @@ The **recommended** production API is **`whitelane-next/`** (Next.js + **Supabas
 ### Vercel (Next.js + Supabase, step‑by‑step)
 
 1. **Supabase:** Create a project. In **SQL Editor**, run `whitelane-next/supabase/schema.sql` (tables + grants + RLS off for Whitelane tables).
-2. **Vercel:** Import this repo. Set **Root Directory** to **`whitelane-next`** (do **not** leave the repo root — it is not a Next.js app).
+2. **Vercel:** Import this repo. Either leave **Root Directory** empty and use the repo-root **`vercel.json`** (it `cd`s into `whitelane-next` for install/build), **or** set **Root Directory** to **`whitelane-next`**. Clear any stale **Output Directory** = `dist` from old Vite/Laravel settings.
 3. **Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`, optionally `WHITELANE_OTP_FALLBACK_TO_PASSWORD`.
 4. **Node:** Use **24.x** to match `whitelane-next/package.json` `engines`.
 5. **Deploy** and verify `GET /up`, then `POST /v1/auth/driver/login` (see [whitelane-next/README.md](../whitelane-next/README.md) for curl examples).
