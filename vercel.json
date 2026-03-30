@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "cd whitelane-next && npm install",
-  "buildCommand": "cd whitelane-next && npm run build",
+  "installCommand": "npm install && npm install --prefix whitelane-next",
+  "buildCommand": "npm run build --prefix whitelane-next",
   "outputDirectory": "whitelane-next/.next"
 }

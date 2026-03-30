@@ -27,8 +27,8 @@ Details: [whitelane-next/README.md](whitelane-next/README.md) (env vars, RLS, **
 ## Deploy (Vercel)
 
 1. Connect this Git repo to Vercel.
-2. **Root Directory:** leave **empty** (repo root) — **`vercel.json`** at the root runs install/build inside **`whitelane-next/`** and sets **`outputDirectory`** to **`whitelane-next/.next`**.  
-   *Alternatively*, you can set Root Directory to **`whitelane-next`** and clear any custom **Output Directory** / **Build Command** overrides in Vercel so they don’t expect `dist` from the old Vite root.
+2. **Root Directory:** leave **empty** (repo root) — **`vercel.json`** runs `npm install` at the root (so Vercel sees **`next`** in the root `package.json`) **and** `npm install` in **`whitelane-next/`**, then **`npm run build --prefix whitelane-next`**.  
+   *Alternatively*, set Root Directory to **`whitelane-next`** and you can ignore the root `vercel.json` install/build overrides if Vercel picks up `whitelane-next/vercel.json` alone.
 3. In Vercel → Project → Settings → **General**: if **Output Directory** is set to `dist`, **remove it** (let `vercel.json` or the Next builder control output).
 4. Add env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
 5. Run **`whitelane-next/supabase/schema.sql`** in Supabase before traffic.
@@ -59,7 +59,7 @@ The **`app/`**, **`routes/`**, **`database/`**, etc. tree is a **legacy Laravel 
 ## Production checklist (Next + Supabase)
 
 - Supabase: schema applied, RLS off (or policies) for Whitelane tables as in `supabase/schema.sql`
-- Vercel: correct **Root Directory** (`whitelane-next`) and both `NEXT_PUBLIC_*` variables
+- Vercel: repo root + root `vercel.json`, **or** Root Directory **`whitelane-next`**; both `NEXT_PUBLIC_*` variables set
 - Set `WHITELANE_OTP_FALLBACK_TO_PASSWORD=false` when real OTP is implemented
 
 ## License
