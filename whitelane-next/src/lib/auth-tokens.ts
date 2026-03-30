@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { Prisma, User } from '@prisma/client';
 import crypto from 'crypto';
 import { prisma } from './prisma';
 import { generateTokenString, sha256Hex, TOKENABLE_TYPE } from './sanctum-token';
@@ -28,7 +28,7 @@ export async function issuePair(user: User) {
       tokenableId: user.id,
       name: ACCESS_NAME,
       token: tokenHash,
-      abilities: JSON.stringify(['driver']),
+      abilities: ['driver'] as Prisma.InputJsonValue,
       expiresAt,
     },
   });
@@ -82,8 +82,12 @@ export async function findUserFromBearer(authorization: string | null): Promise<
 
   if (raw.includes('|')) {
     const [idStr, secret] = raw.split('|', 2);
-    const id = parseInt(idStr, 10);
-    if (Number.isNaN(id)) return null;
+    let id: bigint;
+    try {
+      id = BigInt(idStr);
+    } catch {
+      return null;
+    }
     tokenRow = await prisma.personalAccessToken.findUnique({ where: { id } });
     if (!tokenRow || tokenRow.token !== sha256Hex(secret)) return null;
   } else {
