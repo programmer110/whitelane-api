@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { issuePair } from '@/lib/auth-tokens';
 import { json, jsonError } from '@/lib/http';
 import { resolveUser, verifySecret } from '@/lib/login';
+import { formatUnknownError, normalizePostgrestError } from '@/lib/supabase/errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = formatUnknownError(e);
     if (msg.includes('NEXT_PUBLIC_SUPABASE')) {
       return json(
         {
@@ -68,19 +69,23 @@ export async function POST(request: Request) {
             code: 'configuration',
             message: 'Supabase env vars are not set on the server.',
           },
-          hint: 'Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in Vercel → Settings → Environment Variables.',
+          hint: 'Add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (recommended) or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel → Environment Variables.',
         },
         503,
       );
     }
-    console.error('[driver/login]', e);
+    const pg = normalizePostgrestError(e);
+    console.error('[driver/login]', msg, e);
     return json(
       {
         error: {
           code: 'upstream',
-          message: 'Database request failed.',
+          message: pg?.message ?? 'Database request failed.',
+          ...(pg?.code && { postgrest_code: pg.code }),
+          ...(pg?.details && { postgrest_details: pg.details }),
+          ...(pg?.hint && { postgrest_hint: pg.hint }),
+          ...(!pg && { hint: msg }),
         },
-        hint: msg,
       },
       503,
     );

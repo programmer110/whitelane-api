@@ -74,8 +74,13 @@ Automated scripts (with **`npm run dev`** or **`npm run start`** running):
 
 ```bash
 ./scripts/curl-smoke.sh http://localhost:3000
-./scripts/curl-api-test.sh http://localhost:3000   # /up, login, upcoming, history, presence, refresh, logout, bad login
+./scripts/curl-api-test.sh http://localhost:3000   # full suite
+
+# Vercel preview URL with Deployment Protection — add bypass token from project settings:
+VERCEL_PROTECTION_BYPASS='your_bypass_secret' ./scripts/curl-api-test.sh https://your-app-git-main-xxx.vercel.app
 ```
+
+If `curl` returns HTML titled **Authentication Required**, that is **Vercel’s wall**, not this API. Disable preview protection, use production URL, or pass `VERCEL_PROTECTION_BYPASS` as above.
 
 ## Behaviour notes
 

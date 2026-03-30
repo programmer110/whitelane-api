@@ -9,7 +9,8 @@ Production driver JSON API: **[whitelane-next/](whitelane-next/)** (**Next.js** 
 ```bash
 cd whitelane-next
 cp .env.example .env
-# Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+# Set NEXT_PUBLIC_SUPABASE_URL and a key: SUPABASE_SERVICE_ROLE_KEY (server, recommended on Vercel)
+# or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY / NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 # Supabase → SQL Editor: run whitelane-next/supabase/schema.sql once
 
@@ -30,10 +31,20 @@ Details: [whitelane-next/README.md](whitelane-next/README.md) (env vars, RLS, **
 2. **Root Directory:** leave **empty** (repo root) — **`vercel.json`** runs `npm install` at the root (so Vercel sees **`next`** in the root `package.json`) **and** `npm install` in **`whitelane-next/`**, then **`npm run build --prefix whitelane-next`**.  
    *Alternatively*, set Root Directory to **`whitelane-next`** and you can ignore the root `vercel.json` install/build overrides if Vercel picks up `whitelane-next/vercel.json` alone.
 3. In Vercel → Project → Settings → **General**: if **Output Directory** is set to `dist`, **remove it** (let `vercel.json` or the Next builder control output).
-4. Add env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
+4. Add env vars: `NEXT_PUBLIC_SUPABASE_URL`, and **`SUPABASE_SERVICE_ROLE_KEY`** (Supabase → Settings → API, *service_role* — server only, not `NEXT_PUBLIC_*`) **or** the publishable/anon key if you rely on `schema.sql` GRANTs.
 5. Run **`whitelane-next/supabase/schema.sql`** in Supabase before traffic.
 
-**Preview deployments:** Vercel Deployment Protection may block anonymous `curl`; use production, a bypass token, or see [whitelane-next/README.md](whitelane-next/README.md).
+### Vercel “Authentication Required” / `curl` gets HTML instead of JSON
+
+Branch preview URLs look like **`https://…-git-main-….vercel.app`**. If **Deployment Protection** is enabled, Vercel may return an **HTML login page**, a short **`Redirecting...`** body (redirect/cookie flow), or similar — your **Next.js API never runs**, so `/up` is not JSON and tests fail.
+
+**Fix (pick one):**
+
+- **Production / custom domain:** Use the **production** deployment URL (often `https://<project>.vercel.app` without `-git-main-` in the hostname), or attach a domain and test that.
+- **Dashboard:** Vercel → **Project** → **Settings** → **Deployment Protection** → turn off Standard Protection for **Preview** (or only for this project), *or* keep it and use a **bypass token** (see [Protection bypass automation](https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation)).
+- **Scripts:** `VERCEL_PROTECTION_BYPASS='<token>' ./whitelane-next/scripts/curl-api-test.sh https://your-preview-host.vercel.app`
+
+See [whitelane-next/README.md](whitelane-next/README.md).
 
 ## Flutter app
 
