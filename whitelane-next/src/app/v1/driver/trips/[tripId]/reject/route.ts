@@ -1,9 +1,10 @@
+import { rowToTrip } from '@/lib/db/mappers';
 import { requireDriver } from '@/lib/guard';
 import { jsonError } from '@/lib/http';
 import { parseBigIntId } from '@/lib/id';
+import { createSupabaseRouteClient } from '@/lib/supabase/route';
 import { findAuthorizedTrip } from '@/lib/trip-access';
 import { driverTripJson } from '@/lib/trip-resource';
-import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
 
@@ -25,10 +26,18 @@ export async function POST(
     return jsonError('conflict', 'Trip no longer available', 409);
   }
 
-  const updated = await prisma.trip.update({
-    where: { id },
-    data: { driverId: null, driverStatus: 'offered' },
-  });
+  const supabase = createSupabaseRouteClient();
+  const { data: row, error } = await supabase
+    .from('trips')
+    .update({
+      driver_id: null,
+      driver_status: 'offered',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id.toString())
+    .select('*')
+    .single();
+  if (error) throw error;
 
-  return Response.json(driverTripJson(updated));
+  return Response.json(driverTripJson(rowToTrip(row as Record<string, unknown>)));
 }

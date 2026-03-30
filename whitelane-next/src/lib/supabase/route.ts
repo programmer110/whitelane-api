@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { requireSupabaseEnv } from './config';
 
 /**
- * Stateless Supabase REST client for API routes / server jobs — no cookie session.
- * Respects RLS as the anonymous role unless you pass a user JWT.
+ * Stateless Supabase client for API routes — PostgREST with the publishable (anon) key.
+ * Table access requires GRANTs (see supabase/schema.sql) or matching RLS policies.
  */
 export function createSupabaseRouteClient() {
   const { url, publishableKey } = requireSupabaseEnv();

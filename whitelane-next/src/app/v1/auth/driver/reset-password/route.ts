@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { findUserFromBearer } from '@/lib/auth-tokens';
-import { prisma } from '@/lib/prisma';
+import { createSupabaseRouteClient } from '@/lib/supabase/route';
 
 export const runtime = 'nodejs';
 
@@ -40,10 +40,16 @@ export async function POST(request: Request) {
   }
 
   const hash = await bcrypt.hash(body.new_password, 12);
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { password: hash, mustResetPassword: false },
-  });
+  const supabase = createSupabaseRouteClient();
+  const { error } = await supabase
+    .from('users')
+    .update({
+      password: hash,
+      must_reset_password: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.id.toString());
+  if (error) throw error;
 
   return new Response(null, { status: 204 });
 }

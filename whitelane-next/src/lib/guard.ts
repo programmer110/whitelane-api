@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { User } from '@/lib/db/types';
 import { findUserFromBearer } from './auth-tokens';
 import { jsonError } from './http';
 

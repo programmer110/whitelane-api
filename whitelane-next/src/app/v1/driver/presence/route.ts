@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { requireDriver } from '@/lib/guard';
-import { prisma } from '@/lib/prisma';
+import { createSupabaseRouteClient } from '@/lib/supabase/route';
 
 export const runtime = 'nodejs';
 
@@ -21,14 +21,16 @@ export async function PATCH(request: Request) {
     return Response.json({ message: 'Validation failed', errors: {} }, { status: 422 });
   }
 
-  await prisma.user.update({
-    where: { id: userOrRes.id },
-    data: {
-      isOnline: body.is_online,
-      ...(body.lat !== undefined ? { lastLat: body.lat } : {}),
-      ...(body.lng !== undefined ? { lastLng: body.lng } : {}),
-    },
-  });
+  const patch: Record<string, unknown> = {
+    is_online: body.is_online,
+    updated_at: new Date().toISOString(),
+  };
+  if (body.lat !== undefined) patch.last_lat = body.lat;
+  if (body.lng !== undefined) patch.last_lng = body.lng;
+
+  const supabase = createSupabaseRouteClient();
+  const { error } = await supabase.from('users').update(patch).eq('id', userOrRes.id.toString());
+  if (error) throw error;
 
   return new Response(null, { status: 204 });
 }

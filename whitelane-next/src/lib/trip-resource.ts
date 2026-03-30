@@ -1,4 +1,4 @@
-import type { Trip } from '@prisma/client';
+import type { Trip } from '@/lib/db/types';
 
 function isConfirmedOperational(t: Trip): boolean {
   return t.paymentPaid && t.driverStatus !== 'cancelled';

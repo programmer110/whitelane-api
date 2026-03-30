@@ -50,7 +50,7 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com/v1
 
 ## Deploy (HTTPS URL for the mobile app)
 
-**Vercel-native stack (recommended for Vercel):** [whitelane-next/](whitelane-next/) — **Next.js + Prisma** + **PostgreSQL** (e.g. Supabase). Set the Vercel project root to `whitelane-next` and add `DATABASE_URL` from your host’s connection string.
+**Vercel-native stack (recommended for Vercel):** [whitelane-next/](whitelane-next/) — **Next.js + Supabase JS** (no direct Postgres URL in the app). Set the Vercel project root to `whitelane-next` and add **`NEXT_PUBLIC_SUPABASE_URL`** + **`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`**. Apply **`whitelane-next/supabase/schema.sql`** in the Supabase SQL editor first.
 
 **Laravel (PHP):** **Render** + `render.yaml`, **Fly.io**, **Railway**, or experimental **Vercel PHP** (`vercel.json` in repo root). **Netlify does not run PHP/Laravel APIs.**
 
