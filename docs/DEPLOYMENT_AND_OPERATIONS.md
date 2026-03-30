@@ -12,7 +12,7 @@ This project is a **Laravel (PHP) API** with a **SQL database**, sessions, and m
 ### Vercel (step‑by‑step)
 
 1. **Database:** Create a Postgres instance (Neon recommended). Copy the connection string.
-2. **Vercel project:** Import this Git repo. Set **Node.js 18** (see `package.json` `engines` and `.nvmrc`) — required for `vercel-php` builds.
+2. **Vercel project:** Import this Git repo. Set **Node.js 24** (see `package.json` `engines` and `.nvmrc`) — required for `vercel-php` builds.
 3. **Environment variables** (Project → Settings → Environment Variables), for **Production**:
    - `APP_KEY` — `php artisan key:generate --show` locally
    - `APP_URL` — `https://<your-project>.vercel.app`

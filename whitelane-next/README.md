@@ -4,7 +4,7 @@ Same JSON API as the Laravel app (`/v1/*`, `GET /up`), implemented with **Next.j
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 24.x (matches Vercel’s supported runtime; see `engines` in `package.json`)
 - **SQLite** — default `DATABASE_URL` points at the repo’s `database/database.sqlite` (same file Laravel uses).
 
 ## Setup (SQLite, shared with Laravel)
